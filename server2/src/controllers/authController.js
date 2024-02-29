@@ -1,103 +1,100 @@
-const User = require('../models/UserSchema')
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { success } = require('../utils/responseWrapper');
+const User = require("../models/UserSchema");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { success, error } = require("../utils/responseWrapper");
 const signupController = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({
-                message: 'All field are required'
-            });
+            return res.send(error("All field are required", 400));
         }
         const olduser = await User.findOne({ email });
         if (olduser) {
-            return res.status(409).json({
-                message: 'This email is already'
-            })
+            return res.send(error("This email is already registered", 409));
         }
         const hashPassword = bcrypt.hashSync(password, 10);
         const user = await User.create({
             email,
             password: hashPassword,
-        })
-        return res.status(201).json({
-            user,
-        })
-    } catch (error) {
-        console.log(error);
+        });
+
+        return res.send(success({ user }, 200));
+    } catch (e) {
+        console.log(e);
+        return res.send(error("something error while signup", 500));
     }
-}
+};
 const loginController = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({
-                message: 'All field are required'
-            });
+            return res.send(error("All field are required", 400));
         }
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({
-                message: 'This email is not registred'
-            })
+            return res.send(error("This email is not registred", 404));
         }
         const matchpass = bcrypt.compareSync(password, user.password);
         if (!matchpass) {
-            return res.status(403).json({
-                message: 'password incorrect'
-            })
+            return res.send(error("password incorrect", 403));
         }
-        const token = generateToken({
-            user: user._id
+        const Accesstoken = generateToken({
+            _id: user._id,
         });
         const refreshtoken = refreshAccessToken({
-            user: user._id,
-        })
-        return res.send(success({token}));
-    } catch (error) {
-        console.log(error);
+            _id: user._id,
+        });
+        res.cookie("jwt", refreshtoken, {
+            httpOnly: true,
+            secure: true,
+        });
+        return res.send(success({ Accesstoken }, 201));
+    } catch (e) {
+        console.log(e);
+        return res.send(error("something error while login", 500));
     }
-}
+};
 //refreshAccessToken will check refreshtoken validity and generate a new token
 const refreshAccessTokenController = async (req, res) => {
-    const { refreshtoken } = req.body;
-    if (!refreshtoken) {
-        console.log('refresh_Token required');
+    const cookies = req.cookies;
+    if (!cookies.jwt) {
+        return res.send(error("Refresh token is required"));
     }
+    const refreshtoken = cookies.jwt;
     try {
         const decode = jwt.verify(refreshtoken, process.env.Refresh_token_key);
-        const id = decode.user;
-        const newtoken = generateToken({ id });
-        return res.status(201).json({
-            newtoken,
-        })
-    } catch (error) {
-        console.log(error);
-        return res.status(401).json('invalid token');
+        const _id = decode._id;
+        console.log(_id);
+        const newAccesstoken = generateToken({ _id });
+        return res.send(success({ newAccesstoken }, 201));
+    } catch (e) {
+        console.log(e);
+        return res.send(error("invallid token", 401));
     }
-}
+};
 
 const refreshAccessToken = (data) => {
     try {
         const token = jwt.sign(data, process.env.Refresh_token_key, {
-            expiresIn: '1hr'
+            expiresIn: "1hr",
         });
-        return token
+        return token;
     } catch (error) {
         console.log(error);
     }
-}
+};
 const generateToken = (data) => {
     try {
         const token = jwt.sign(data, process.env.Access_token_key, {
-            expiresIn: '15m'
+            expiresIn: "15m",
         });
-        return token
+        return token;
     } catch (error) {
         console.log(error);
     }
-}
+};
 module.exports = {
-    signupController, loginController, refreshAccessTokenController,
-}
+    signupController,
+    loginController,
+    refreshAccessTokenController,
+};

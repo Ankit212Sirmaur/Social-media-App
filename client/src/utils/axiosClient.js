@@ -31,7 +31,7 @@ axiosclient.interceptors.response.use(async (response) => {
     }
 
     if (statusCode === 401) {   // means accesstoken expires generate a new access_token
-        const response = await axiosclient.get('/auth/refresh');
+        const response = await axiosclient.get(`${process.env.REACT_APP_SERVER_BASE_URL}/auth/refresh`);
         console.log( "interceptor response", response);
         if (response.status === 'ok') {
             setItem(Key_Access_Token, response.data.newAccesstoken); 

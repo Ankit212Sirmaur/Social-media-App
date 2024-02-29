@@ -10,7 +10,28 @@ const userSchema = new  mongoose.Schema({
     password: {
         type: String,
         required: true,
-    }  
+    },
+    name:{
+        type: String,
+        required: true,
+    },
+    avatar:{
+        publicId: String, 
+        url: String,
+    },
+    followers:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }
+    ],
+    followings: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }
+    ]
+
 }, {timestamps: true});
 
 module.exports = mongoose.model('User', userSchema);
