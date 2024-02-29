@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 const { success, error } = require("../utils/responseWrapper");
 const signupController = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
+        const {name,  email, password } = req.body;
+        if (!name || !email || !password) {
             return res.send(error("All field are required", 400));
         }
         const olduser = await User.findOne({ email });
@@ -14,11 +14,12 @@ const signupController = async (req, res) => {
         }
         const hashPassword = bcrypt.hashSync(password, 10);
         const user = await User.create({
+            name,
             email,
             password: hashPassword,
         });
 
-        return res.send(success({ user }, 200));
+        return res.send(success("user successfully signup", 200));
     } catch (e) {
         console.log(e);
         return res.send(error("something error while signup", 500));
@@ -76,7 +77,7 @@ const refreshAccessTokenController = async (req, res) => {
 const refreshAccessToken = (data) => {
     try {
         const token = jwt.sign(data, process.env.Refresh_token_key, {
-            expiresIn: "1hr",
+            expiresIn: "1y",
         });
         return token;
     } catch (error) {
@@ -86,7 +87,7 @@ const refreshAccessToken = (data) => {
 const generateToken = (data) => {
     try {
         const token = jwt.sign(data, process.env.Access_token_key, {
-            expiresIn: "15m",
+            expiresIn: "1d",
         });
         return token;
     } catch (error) {

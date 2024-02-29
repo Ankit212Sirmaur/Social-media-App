@@ -19,6 +19,7 @@ app.use(cors({
 
 app.use('/auth',authRouter);
 app.use('/posts',middleware, postRoutes);
+// app.use('/posts', postRoutes);
 
 app.listen(Port, async() =>{
     console.log(`Server started at ${Port}`);

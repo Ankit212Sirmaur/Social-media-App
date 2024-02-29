@@ -12,6 +12,6 @@ module.exports = async (req, res, next) => {
         next();
     } catch (e) {
         console.log(e);
-        return res.send(error('invalid token', 401));
+        return res.send(error('invalid token from the middleware', 401));
     }
 }
