@@ -1,20 +1,27 @@
 import React, { useState } from "react";
 import "./login.scss";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { axiosclient } from "../../utils/axiosClient";
+import { Key_Access_Token, setItem } from "../../utils/localStorageManager";
 
 function Login() {
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
+  const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    // console.log(email, password);
-    const result = await axiosclient.post("/auth/login", {
-      email,
-      password,
-    });
-    console.log(result);
+    try {
+      const result = await axiosclient.post("/auth/login", {
+        email,
+        password,
+      });
+      setItem(Key_Access_Token, result.accesstoken);
+      navigate('/')
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
