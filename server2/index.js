@@ -1,9 +1,10 @@
 const express = require('express');
 const {Port, Client} = require('./src/config/serverConfig');
+const middleware = require('./src/middlewares/requireLogin')
 const connect = require('./src/config/databaseConfig')
 const authRouter = require('./src/routes/authRouter')
 const postRoutes = require('./src/routes/postRoutes');
-const middleware = require('./src/middlewares/requireLogin')
+const userToFollow = require('./src/routes/userRouter');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
@@ -19,7 +20,7 @@ app.use(cors({
 
 app.use('/auth',authRouter);
 app.use('/posts',middleware, postRoutes);
-// app.use('/posts', postRoutes);
+app.use('/user', middleware, userToFollow);
 
 app.listen(Port, async() =>{
     console.log(`Server started at ${Port}`);
