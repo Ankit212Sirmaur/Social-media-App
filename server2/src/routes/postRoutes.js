@@ -1,8 +1,9 @@
 const router = require('express').Router();
-const {getAllPost, createPost, likeAndUnlikePost} = require('../controllers/postController')
+const { getAllPost, createPost, updatePost, likeAndUnlikePost, deletePost } = require('../controllers/postController')
 
-router.get('/all', getAllPost);
-router.post('/create', createPost);
+router.post('/', createPost);
 router.post('/toogleLike', likeAndUnlikePost);
+router.put('/', updatePost);
+router.delete('/', deletePost);
 
 module.exports = router;

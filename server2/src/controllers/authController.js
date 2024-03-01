@@ -70,7 +70,7 @@ const refreshAccessTokenController = async (req, res) => {
         return res.send(success({ newAccesstoken }, 201));
     } catch (e) {
         console.log(e);
-        return res.send(error("invallid token", 401));
+        return res.send(error("invalid token", 401));
     }
 };
 
@@ -94,8 +94,21 @@ const generateToken = (data) => {
         console.log(error);
     }
 };
+
+const logoutController = async (req, res) =>{
+    try { // backend deleting refresh token => frontend will delete access token
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            secure: true,
+        })
+        return res.send(success('User logged out', 200));
+    } catch (e) {
+        return res.send(error(e.message, 500));
+    }
+}
 module.exports = {
     signupController,
     loginController,
     refreshAccessTokenController,
+    logoutController
 };

@@ -1,26 +1,27 @@
 const User = require("../models/UserSchema");
+const Posts = require("../models/PostSchema");
 const { error, success } = require("../utils/responseWrapper");
 const followOrUnfollowController = async (req, res) => {
     try {
         const { userIdToFollow } = req.body;
         const curUserId = req._id;
-        
-        const userToFollow = await User.findById(userIdToFollow);
+
         const curUser = await User.findById(curUserId);
-        
+        const userToFollow = await User.findById(userIdToFollow);
+        console.log(curUser);
         if (curUserId === userIdToFollow) {
             return res.send(error(409, "Users cannot follow themselves"));
         }
-        
+
         if (!userToFollow) {
             return res.send(error(404, "User to follow not found"));
         }
-        
+
         if (curUser.followings.includes(userIdToFollow)) { // already followed
-            
+
             const followingIndex = curUser.followings.indexOf(userIdToFollow);
             curUser.followings.splice(followingIndex, 1);
-            
+
             const followerIndex = userToFollow.followers.indexOf(curUser);
             userToFollow.followers.splice(followerIndex, 1);
         } else {
@@ -37,6 +38,36 @@ const followOrUnfollowController = async (req, res) => {
     }
 };
 
+const getPostsOfFollowing = async (req, res) => {
+    try {
+        const currUser = await User.findById(req._id);
+        // i want all post curruser following f
+        // const followings = currUser.followings;
+        const posts = await Posts.find({
+            'owner': {
+                '$in': currUser.followings
+            }
+        });
+        return res.send(success({ posts }, 200));
+    } catch (e) {
+        return res.send(error('not post', 500));
+    }
+
+}
+
+const getMyPosts = async (req, res) => {
+    try {
+        const currUserId = req._id;
+        const UserPosts = await Posts.find({
+            owner : currUserId  
+        }).populate('likes');
+        return res.send(success({UserPosts}, 200));
+    } catch (e) {
+        return res.send(error(e.message, 500));
+    }
+}
 module.exports = {
     followOrUnfollowController,
+    getPostsOfFollowing,
+    getMyPosts,
 };
