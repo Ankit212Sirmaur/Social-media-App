@@ -1,6 +1,7 @@
 const User = require("../models/UserSchema");
 const Posts = require("../models/PostSchema");
 const { error, success } = require("../utils/responseWrapper");
+
 const followOrUnfollowController = async (req, res) => {
     try {
         const { userIdToFollow } = req.body;
@@ -60,7 +61,24 @@ const getMyPosts = async (req, res) => {
         const currUserId = req._id;
         const UserPosts = await Posts.find({
             owner : currUserId  
-        }).populate('likes');
+        }).populate('likes'); 
+         //  by populating this like we get all the details who have liked this post  by ref 'user' 
+        //  before this we getting only liked id in the liked arrray of post schema
+        return res.send(success({UserPosts}, 200));
+    } catch (e) {
+        return res.send(error(e.message, 500));
+    }
+}
+
+const getUserPosts = async (req, res) =>{
+    try {
+        const userId = req.body.userId;
+        if(!userId) {
+            return res.send(error('user id required', 400));
+        }
+        const UserPosts = await Posts.find({
+            owner : userId
+        }).populate('likes').sort({ updatedAt: 1 });  // getting in the increasing order  which post is comes at last come first
         return res.send(success({UserPosts}, 200));
     } catch (e) {
         return res.send(error(e.message, 500));
@@ -70,4 +88,5 @@ module.exports = {
     followOrUnfollowController,
     getPostsOfFollowing,
     getMyPosts,
+    getUserPosts,
 };
