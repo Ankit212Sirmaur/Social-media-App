@@ -15,7 +15,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:3000',
+    origin: Client,
 }))
 
 app.use('/auth',authRouter);

@@ -6,6 +6,7 @@ import Home from './pages/homepages/Home';
 import RequireLogin from './middleware/RequireLogin';
 import Profile from './components/MyProfile/Myprofile';
 import Feed from './components/feed/Feed';
+import UpdateProfile from './components/updateProfile/UpdateProfile';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route element={<Home />} >
             <Route path='/' element={<Feed />} />
             <Route path='/profile/:userId' element={<Profile />} />
+            <Route path='/updateProfile' element ={<UpdateProfile/>} />
           </Route>
         </Route>
         <Route path='/login' element={<Login />} />

@@ -52,6 +52,7 @@ function Login() {
         <hr />
         <p className="subHeading">
           Do not have an account? <Link to="/Signup">Signup</Link>{" "}
+          {/* Do not have an account? <span onClick={(e) => navigate('/Signup')}>Signup</span> */}
         </p>
       </div>
     </div>
