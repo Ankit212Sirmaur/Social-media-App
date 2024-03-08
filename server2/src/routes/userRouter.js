@@ -1,12 +1,15 @@
 const router = require('express').Router();
+const middleware = require('../middlewares/requireLogin')
 const { followOrUnfollowController, getPostsOfFollowing, getMyPosts,
-    getUserPosts, deleteMyProfile } = require('../controllers/userController');
+    getUserPosts, deleteMyProfile, getMyInfo, updateUserProfile } = require('../controllers/userController');
 
-router.post('/toggleFollow', followOrUnfollowController);
-router.get('/following/post', getPostsOfFollowing);
-router.get('/getMyposts', getMyPosts);
-router.get('/getUserPost', getUserPosts);
-router.delete('/',deleteMyProfile);
+router.post('/toggleFollow',middleware, followOrUnfollowController);
+router.get('/following/post',middleware, getPostsOfFollowing);
+router.get('/getMyposts',middleware, getMyPosts);
+router.get('/getUserPost',middleware, getUserPosts);
+router.delete('/', middleware, deleteMyProfile);
+router.get('/getMyInfo',middleware, getMyInfo);
+router.put('/', middleware, updateUserProfile);
 
 
 

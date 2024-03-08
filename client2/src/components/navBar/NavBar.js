@@ -1,36 +1,34 @@
-import React, { useRef, useState } from 'react'
+import React from 'react'
 import './navBar.scss'
 import Avatar from '../Avatar/Avatar'
 import { useNavigate } from 'react-router-dom'
 import { LuLogOut } from "react-icons/lu";
-import LoadingBar from 'react-top-loading-bar'
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading } from '../../redux/Slice/appConfigSlice';
+
 function NavBar() {
 
   const navigate = useNavigate();
-  const Loadingref = useRef();
 
-  const[loading, setLoading] = useState(false);
+  const myProfile = useSelector(state => state.appConfigReducer.myProfile)
 
-  function toogleLoadingBar(){
-    if(loading){
-      setLoading(false);
-      Loadingref.current.complete();
-    }else {
-      setLoading(true);
-      Loadingref.current.continuousStart(); 
-    }
+  console.log('myProfile', myProfile);
+
+  function handleLogoutClicked(){
+    
   }
+
 
   return (
     <div className="Navbar">
-      <LoadingBar  height = {4} color='#5f9fff' ref={Loadingref} />
       <div className="container">
         <h2 className="banner hover-link" onClick={() => navigate('/')}>Social Media</h2>
         <div className="right-side">
-          <div className="profile hover-link" onClick={() => navigate('/profile/userx')}>
-            <Avatar />
+          <div className="profile hover-link" onClick={() => navigate(`/profile/${myProfile?._id}`)}>
+            {/* <Avatar /> */}
+            <Avatar src={myProfile?.avatar?.url} />
           </div>
-          <div className="logout hover-link" onClick={toogleLoadingBar}>
+          <div className="logout hover-link" onClick={handleLogoutClicked}>
             <LuLogOut />
           </div>
         </div>

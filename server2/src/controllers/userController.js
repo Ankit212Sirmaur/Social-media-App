@@ -1,7 +1,7 @@
 const User = require("../models/UserSchema");
 const Posts = require("../models/PostSchema");
 const { error, success } = require("../utils/responseWrapper");
-
+const cloudinary = require("cloudinary").v2;
 const followOrUnfollowController = async (req, res) => {
     try {
         const { userIdToFollow } = req.body;
@@ -123,7 +123,7 @@ const deleteMyProfile = async (req, res) => {
 
         // delete user
         await User.deleteOne({ _id: curUserId });
-        
+
         res.clearCookie("jwt", {
             httpOnly: true,
             secure: true,
@@ -135,10 +135,42 @@ const deleteMyProfile = async (req, res) => {
         return res.send(error(500, e.message));
     }
 };
+
+const getMyInfo = async (req, res) => {
+    try {
+        const user = await User.findById(req._id);
+        return res.send(success({ user }, 200));
+    } catch (e) {
+        return res.send(error(500, e.message));
+    }
+}
+
+const updateUserProfile = async (req, res) => {
+    const { name, bio, img } = req.body;
+
+    const user = await User.findById(req._id);
+    if (name) {
+        user.name = name;
+    } if (bio) {
+        user.bio = bio;
+    } if (img) {
+        const cloudImg = await cloudinary.uploader.upload(img, {
+            folder: 'ProfileImg'
+        })
+        user.avatar = {
+            url: cloudImg.secure.url,
+            publicId: cloudImg.public_id
+        }
+    }
+    await user.save();
+    return res.send(success({user}, 200));
+}
 module.exports = {
     followOrUnfollowController,
     getPostsOfFollowing,
     getMyPosts,
     getUserPosts,
     deleteMyProfile,
+    getMyInfo,
+    updateUserProfile,
 };

@@ -3,19 +3,15 @@
     .container {
         display: flex;
         padding-top: 20px;
-        
     }
     .left-part {
         flex: 1;
         text-align: center;
 
-        .user-img {
+        .input-user-img {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
 
             .labelImg {
                 width: 80px;
@@ -60,11 +56,9 @@
             width: fit-content;
         }
 
-        .delete-account{
-            display: block;
+        .delete-account {
             margin-top: 16px;
             background-color: red;
-            border-radius: 10px;
         }
     }
 }

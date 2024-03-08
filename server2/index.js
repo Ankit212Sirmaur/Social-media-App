@@ -1,12 +1,18 @@
 const express = require('express');
 const {Port, Client} = require('./src/config/serverConfig');
-const middleware = require('./src/middlewares/requireLogin')
 const connect = require('./src/config/databaseConfig')
 const authRouter = require('./src/routes/authRouter')
 const postRoutes = require('./src/routes/postRoutes');
 const userToFollow = require('./src/routes/userRouter');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const cloudinary = require("cloudinary").v2;
+          
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
 
 const app = express();
 
@@ -19,8 +25,8 @@ app.use(cors({
 }))
 
 app.use('/auth',authRouter);
-app.use('/posts',middleware, postRoutes);
-app.use('/user', middleware, userToFollow);
+app.use('/posts', postRoutes);
+app.use('/user', userToFollow);
 
 app.listen(Port, async() =>{
     console.log(`Server started at ${Port}`);
