@@ -1,13 +1,13 @@
-import React from 'react'
-import userImg from '../../assests/user.png'
-import './Avatar.scss'
+import React from "react";
+import userImg from "../../assets/user.png";
+import "./Avatar.scss";
 
-function Avatar({src}) {
-  return (
-    <div className='Avatar'>
-        <img src= {src ? src : userImg} alt="user avatar" />
-    </div>
-  )
+function Avatar({ src }) {
+    return (
+        <div className="Avatar">
+            <img src={src ? src : userImg} alt="user avatar" />
+        </div>
+    );
 }
 
-export default Avatar   
+export default Avatar;

@@ -1,44 +1,78 @@
-import axios from 'axios';
-import { Key_Access_Token, getItem, removeItem, setItem } from './localStorageManager';
+import axios from "axios";
+import {
+    getItem,
+    KEY_ACCESS_TOKEN,
+    removeItem,
+    setItem,
+} from "./localStorageManager";
+import store from '../redux/store';
+import { setLoading, showToast } from "../redux/slices/appConfigSlice";
+import { TOAST_FAILURE } from "../App";
 
-export const axiosclient = axios.create({
-    baseURL: process.env.REACT_APP_SERVER_BASE_URL,
+let baseURL = 'http://localhost:4000/';
+console.log('env is ', process.env.NODE_ENV);
+if(process.env.NODE_ENV === 'production') {
+    baseURL = process.env.REACT_APP_SERVER_BASE_URL
+}
+
+export const axiosClient = axios.create({
+    baseURL,
     withCredentials: true,
-  });
+});
 
-axiosclient.interceptors.request.use((request) => {
-    const access_token = getItem(Key_Access_Token)
-    request.headers['Authorization'] = `Bearer ${access_token}`;
+axiosClient.interceptors.request.use((request) => {
+    const accessToken = getItem(KEY_ACCESS_TOKEN);
+    request.headers["Authorization"] = `Bearer ${accessToken}`;
+    store.dispatch(setLoading(true));
+
     return request;
 });
 
-axiosclient.interceptors.response.use(async (response) => {
-    const data = response.data;
-    console.log(data);
-    if (data.status === 'ok') {
+axiosClient.interceptors.response.use(async (respone) => {
+    store.dispatch(setLoading(false));
+    const data = respone.data;
+    if (data.status === "ok") {
         return data;
     }
-    const originalRequest = response.config;
+
+    const originalRequest = respone.config;
     const statusCode = data.statusCode;
-    const error = data.error;
+    const error = data.message
+    
+    store.dispatch(showToast({
+        type: TOAST_FAILURE,
+        message: error
+    }))
 
-    // if the refresh token key expires direct the user to login page
-    if (statusCode === 401 && originalRequest.url === `${process.env.REACT_APP_SERVER_BASE_URL}/auth/refresh`
-    ) {
-        removeItem(Key_Access_Token);
-        window.location.replace('/login', '_self');
-        return Promise.reject(error);
-    }
+    if (statusCode === 401 && !originalRequest._retry) {
+        // means the access token has expired
+        originalRequest._retry = true;
 
-    if (statusCode === 401) {   // means accesstoken expires generate a new access_token
-        const response = await axiosclient.get('/auth/refresh');
-        console.log( "interceptor response", response);
-        if (response.status === 'ok') {
-            setItem(Key_Access_Token, response.data.newAccesstoken); 
-            originalRequest.headers['Authorization'] = `Bearer ${response.data.newAccesstoken}`;
+        const response = await axios
+            .create({
+                withCredentials: true,
+            })
+            .get(`${baseURL}/auth/refresh`);
+
+        if (response.data.status === "ok") {
+            setItem(KEY_ACCESS_TOKEN, response.data.result.accessToken);
+            originalRequest.headers[
+                "Authorization"
+            ] = `Bearer ${response.data.result.accessToken}`;
+
             return axios(originalRequest);
+        } else {
+            removeItem(KEY_ACCESS_TOKEN);
+            window.location.replace("/login", "_self");
+            return Promise.reject(error);
         }
     }
     return Promise.reject(error);
-
+}, async(error) => {
+    store.dispatch(setLoading(false));
+    store.dispatch(showToast({
+        type: TOAST_FAILURE,
+        message: error.message
+    }))
+    return Promise.reject(error);
 });

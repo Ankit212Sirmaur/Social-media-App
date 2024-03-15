@@ -1,12 +1,12 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { axiosclient } from "../../utils/axiosClient";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { axiosClient } from "../../utils/axiosClient";
+
 export const getMyInfo = createAsyncThunk(
     "user/getMyInfo",
     async () => {
         try {
-            const response = await axiosclient.get("/user/getMyInfo");
-            console.log('response data', response.data);
-            return response.data;
+            const response = await axiosClient.get("/user/getMyInfo");
+            return response.result;
         } catch (error) {
             return Promise.reject(error);
         }
@@ -17,7 +17,7 @@ export const updateMyProfile = createAsyncThunk(
     "user/updateMyProfile",
     async (body) => {
         try {
-            const response = await axiosclient.put("/user/", body);
+            const response = await axiosClient.put("/user/", body);
             return response.result;
         } catch (error) {
             return Promise.reject(error);

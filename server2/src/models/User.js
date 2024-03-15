@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const userSchema = new  mongoose.Schema({
-    email:{
+const userSchema = mongoose.Schema({
+    email: {
         type: String,
         required: true,
         unique: true,
@@ -10,37 +10,39 @@ const userSchema = new  mongoose.Schema({
     password: {
         type: String,
         required: true,
+        select: false
     },
-    name:{
+    name: {
         type: String,
-        required: true,
+        required: true
     },
-    bio:{
+    bio: {
         type: String,
     },
-    avatar:{
-        publicId: String, 
-        url: String,
+    avatar: {
+        publicId: String,
+        url: String
     },
-    followers:[
+    followers: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+            ref: 'user'
         }
     ],
     followings: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+            ref: 'user'
         }
     ],
     posts: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Post',
+            ref: 'post'
         }
     ]
+}, {
+    timestamps: true
+});
 
-}, {timestamps: true});
-
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("user", userSchema);

@@ -1,16 +1,15 @@
+const requireUser = require('../middlewares/requireUser');
+const UserController = require('../controllers/userController');
 const router = require('express').Router();
-const middleware = require('../middlewares/requireLogin')
-const { followOrUnfollowController, getPostsOfFollowing, getMyPosts,
-    getUserPosts, deleteMyProfile, getMyInfo, updateUserProfile } = require('../controllers/userController');
 
-router.post('/toggleFollow',middleware, followOrUnfollowController);
-router.get('/following/post',middleware, getPostsOfFollowing);
-router.get('/getMyposts',middleware, getMyPosts);
-router.get('/getUserPost',middleware, getUserPosts);
-router.delete('/', middleware, deleteMyProfile);
-router.get('/getMyInfo',middleware, getMyInfo);
-router.put('/', middleware, updateUserProfile);
+router.post('/follow', requireUser, UserController.followOrUnfollowUserController);
+router.get('/getFeedData', requireUser, UserController.getPostsOfFollowing);
+router.get('/getMyPosts', requireUser, UserController.getMyPosts);
+router.get('/getUserPosts', requireUser, UserController.getUserPosts);
+router.delete('/', requireUser, UserController.deleteMyProfile);
+router.get('/getMyInfo', requireUser, UserController.getMyInfo);
 
-
+router.put('/', requireUser, UserController.updateUserProfile);
+router.post('/getUserProfile', requireUser, UserController.getUserProfile);
 
 module.exports = router;

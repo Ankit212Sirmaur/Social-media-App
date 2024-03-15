@@ -1,45 +1,49 @@
-.Signup{
+.Signup {
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
 
-    .heading{
+    .heading {
         text-align: center;
     }
-    
-    .signup-box{
+
+    .signup-box {
         padding: 40px;
         min-width: 400px;
-        min-height: 300px;
         border: 1px solid black;
-        border-radius: 5px;
+        border-radius: 4px;
     }
-    input, p{
-        padding: 5px 10px;
-        margin: 15px;
+
+    label, input {
         display: block;
         width: 100%;
+        margin-block: 8px;
+    }
+
+    label {
         font-weight: bold;
+    }
+
+    input {
+        padding: 8px 16px;
         border-radius: 4px;
         border: 1px solid black;
     }
-    .submit{
-        background-color: rgb(0, 174, 255);
+
+    .submit {
+        background-color: #29b4ff;
         color: white;
         border: none;
+        margin-top: 16px;
         font-weight: bold;
+    }
 
+    .submit:hover {
+        background-color: #249dde;
     }
-    .submit:hover{
-        background-color:  rgb(37, 128, 170);
-    }
-    hr{
-        margin-left: 30px;
-    }
-    .subHeading{
-        border: none;
-        text-align: center;
-        text-decoration: none;
+
+    .subheading {
+        margin-top: 16px;
     }
 }

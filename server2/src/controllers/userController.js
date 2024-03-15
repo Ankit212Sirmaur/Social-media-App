@@ -1,15 +1,18 @@
-const User = require("../models/UserSchema");
-const Posts = require("../models/PostSchema");
-const { error, success } = require("../utils/responseWrapper");
+const { json } = require("express");
+const Post = require("../models/Post");
+const User = require("../models/User");
+const { success, error } = require("../utils/responseWrapper");
 const cloudinary = require("cloudinary").v2;
-const followOrUnfollowController = async (req, res) => {
+const { mapPostOutput } = require("../utils/Utils");
+
+const followOrUnfollowUserController = async (req, res) => {
     try {
         const { userIdToFollow } = req.body;
         const curUserId = req._id;
 
-        const curUser = await User.findById(curUserId);
         const userToFollow = await User.findById(userIdToFollow);
-        console.log(curUser);
+        const curUser = await User.findById(curUserId);
+
         if (curUserId === userIdToFollow) {
             return res.send(error(409, "Users cannot follow themselves"));
         }
@@ -20,7 +23,6 @@ const followOrUnfollowController = async (req, res) => {
 
         if (curUser.followings.includes(userIdToFollow)) {
             // already followed
-
             const followingIndex = curUser.followings.indexOf(userIdToFollow);
             curUser.followings.splice(followingIndex, 1);
 
@@ -33,40 +35,56 @@ const followOrUnfollowController = async (req, res) => {
 
         await userToFollow.save();
         await curUser.save();
-        return res.send(success(200, "Toggling follow and unfollow"));
+
+        return res.send(success(200, {user: userToFollow}))
     } catch (e) {
         console.log(e);
-        return res.send(error(e.message, 500));
+        return res.send(error(500, e.message));
     }
 };
 
 const getPostsOfFollowing = async (req, res) => {
     try {
-        const currUser = await User.findById(req._id);
-        // i want all post curruser following f
-        // const followings = currUser.followings;
-        const posts = await Posts.find({
+        const curUserId = req._id;
+        const curUser = await User.findById(curUserId).populate("followings");
+
+        const fullPosts = await Post.find({
             owner: {
-                $in: currUser.followings,
+                $in: curUser.followings,
+            },
+        }).populate('owner');
+
+        const posts = fullPosts
+            .map((item) => mapPostOutput(item, req._id))
+            .reverse();
+        
+        const followingsIds = curUser.followings.map((item) => item._id);
+        followingsIds.push(req._id);
+
+        const suggestions = await User.find({
+            _id: {
+                $nin: followingsIds,
             },
         });
-        return res.send(success({ posts }, 200));
-    } catch (e) {
-        return res.send(error("not post", 500));
+
+        return res.send(success(200, {...curUser._doc, suggestions, posts}));
+    } catch (error) {
+        console.log(e);
+        return res.send(error(500, e.message));
     }
 };
 
 const getMyPosts = async (req, res) => {
     try {
-        const currUserId = req._id;
-        const UserPosts = await Posts.find({
-            owner: currUserId,
+        const curUserId = req._id;
+        const allUserPosts = await Post.find({
+            owner: curUserId,
         }).populate("likes");
-        //  by populating this like we get all the details who have liked this post  by ref 'user'
-        //  before this we getting only liked id in the liked arrray of post schema
-        return res.send(success({ UserPosts }, 200));
-    } catch (e) {
-        return res.send(error(e.message, 500));
+
+        return res.send(success(200, { allUserPosts }));
+    } catch (error) {
+        console.log(e);
+        return res.send(error(500, e.message));
     }
 };
 
@@ -74,16 +92,17 @@ const getUserPosts = async (req, res) => {
     try {
         const userId = req.body.userId;
         if (!userId) {
-            return res.send(error("user id required", 400));
+            return res.send(error(400, "userId is required"));
         }
-        const UserPosts = await Posts.find({
+
+        const allUserPosts = await Post.find({
             owner: userId,
-        })
-            .populate("likes")
-            .sort({ updatedAt: 1 }); // getting in the increasing order  which post is comes at last come first
-        return res.send(success({ UserPosts }, 200));
-    } catch (e) {
-        return res.send(error(e.message, 500));
+        }).populate("likes");
+
+        return res.send(success(200, { allUserPosts }));
+    } catch (error) {
+        console.log(e);
+        return res.send(error(500, e.message));
     }
 };
 
@@ -93,7 +112,7 @@ const deleteMyProfile = async (req, res) => {
         const curUser = await User.findById(curUserId);
 
         // delete all posts
-        await Posts.deleteMany({
+        await Post.deleteMany({
             owner: curUserId,
         });
 
@@ -114,7 +133,7 @@ const deleteMyProfile = async (req, res) => {
         });
 
         // remove myself from all likes
-        const allPosts = await Posts.find();
+        const allPosts = await Post.find();
         allPosts.forEach(async (post) => {
             const index = post.likes.indexOf(curUserId);
             post.likes.splice(index, 1);
@@ -122,7 +141,7 @@ const deleteMyProfile = async (req, res) => {
         });
 
         // delete user
-        await User.deleteOne({ _id: curUserId });
+        await curUser.remove();
 
         res.clearCookie("jwt", {
             httpOnly: true,
@@ -130,7 +149,7 @@ const deleteMyProfile = async (req, res) => {
         });
 
         return res.send(success(200, "user deleted"));
-    } catch (e) {
+    } catch (error) {
         console.log(e);
         return res.send(error(500, e.message));
     }
@@ -139,38 +158,70 @@ const deleteMyProfile = async (req, res) => {
 const getMyInfo = async (req, res) => {
     try {
         const user = await User.findById(req._id);
-        return res.send(success({ user }, 200));
+        return res.send(success(200, { user }));
     } catch (e) {
         return res.send(error(500, e.message));
     }
-}
+};
 
 const updateUserProfile = async (req, res) => {
-    const { name, bio, img } = req.body;
+    try {
+        const { name, bio, userImg } = req.body;
 
-    const user = await User.findById(req._id);
-    if (name) {
-        user.name = name;
-    } if (bio) {
-        user.bio = bio;
-    } if (img) {
-        const cloudImg = await cloudinary.uploader.upload(img, {
-            folder: 'ProfileImg'
-        })
-        user.avatar = {
-            url: cloudImg.secure.url,
-            publicId: cloudImg.public_id
+        const user = await User.findById(req._id);
+
+        if (name) {
+            user.name = name;
         }
+        if (bio) {
+            user.bio = bio;
+        }
+        if (userImg) {
+            const cloudImg = await cloudinary.uploader.upload(userImg, {
+                folder: "profileImg",
+            });
+            user.avatar = {
+                url: cloudImg.secure_url,
+                publicId: cloudImg.public_id,
+            };
+        }
+        await user.save();
+        return res.send(success(200, { user }));
+    } catch (e) {
+        console.log('put e', e);
+        return res.send(error(500, e.message));
     }
-    await user.save();
-    return res.send(success({user}, 200));
-}
+};
+
+const getUserProfile = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const user = await User.findById(userId).populate({
+            path: "posts",
+            populate: {
+                path: "owner",
+            },
+        });
+
+        const fullPosts = user.posts;
+        const posts = fullPosts
+            .map((item) => mapPostOutput(item, req._id))
+            .reverse();
+
+        return res.send(success(200, { ...user._doc, posts }));
+    } catch (e) {
+        console.log('error put', e);
+        return res.send(error(500, e.message));
+    }
+};
+
 module.exports = {
-    followOrUnfollowController,
+    followOrUnfollowUserController,
     getPostsOfFollowing,
     getMyPosts,
     getUserPosts,
     deleteMyProfile,
     getMyInfo,
     updateUserProfile,
+    getUserProfile,
 };

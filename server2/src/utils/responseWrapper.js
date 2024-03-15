@@ -1,19 +1,20 @@
-const success = (data, statusCode) => {
+const success = (statusCode, result) => {
     return {
         status: 'ok',
-        data,
-        statusCode: statusCode
+        statusCode,
+        result
     }
 }
 
-const error = (message, statusCode) =>{
-    return{
+const error = (statusCode, message) => {
+    return {
         status: 'error',
-        message: message,
-        statusCode: statusCode
+        statusCode,
+        message
     }
 }
 
 module.exports = {
-    success, error
+    success,
+    error
 }
