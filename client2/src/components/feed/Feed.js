@@ -1,7 +1,7 @@
-import React, {useEffect} from 'react'
-import './feed.scss'
-import Post from '../Post/Post'
+import React, { useEffect } from 'react'
 import Follower from '../follower/Follower'
+import Post from '../post/Post'
+import './Feed.scss'
 import {useSelector, useDispatch} from 'react-redux';
 import { getFeedData } from '../../redux/slices/feedSlice';
 

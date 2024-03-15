@@ -1,7 +1,6 @@
-import React from 'react'
-import Avatar from '../Avatar/Avatar'
-import './post.scss'
-import temple from '../../assests/temple.avif'
+import React from "react";
+import Avatar from "../avatar/Avatar";
+import "./Post.scss";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import {useDispatch} from 'react-redux';
 import { likeAndUnlikePost } from "../../redux/slices/postsSlice";

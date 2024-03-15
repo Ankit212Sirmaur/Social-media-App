@@ -1,7 +1,6 @@
-import React,{useState, useEffect} from 'react'
-import Avatar from '../Avatar/Avatar'
-import './follower.scss'
-
+import React, { useEffect, useState } from "react";
+import Avatar from "../avatar/Avatar";
+import "./Follower.scss";
 import { useSelector, useDispatch } from "react-redux";
 import { followAndUnfollowUser } from "../../redux/slices/feedSlice";
 import { useNavigate } from "react-router";

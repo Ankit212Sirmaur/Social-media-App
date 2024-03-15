@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { AiOutlineLogout } from "react-icons/ai";
 import { useNavigate } from "react-router";
-import Avatar from '../Avatar/Avatar'
+import Avatar from "../avatar/Avatar";
 import "./Navbar.scss";
 import {useDispatch, useSelector} from 'react-redux';
 import { setLoading } from "../../redux/slices/appConfigSlice";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Avatar from '../Avatar/Avatar'
+import Avatar from "../avatar/Avatar";
 import "./CreatePost.scss";
 import backgroundDummyImg from "../../assets/background.jpeg";
 import { BsCardImage } from "react-icons/bs";
